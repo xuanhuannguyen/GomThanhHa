@@ -18,8 +18,18 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://binh-gom-thanh-ha-web.vercel.app"),
   title: "Bình Gốm Thanh Hà",
-  description: "Workshop đập bình gốm nhận quà"
+  description: "Workshop đập bình gốm nhận quà",
+  icons: {
+    icon: "/icon.png",
+    apple: "/apple-icon.png"
+  },
+  openGraph: {
+    title: "Bình Gốm Thanh Hà",
+    description: "Workshop đập bình gốm nhận quà",
+    images: ["/images/site-logo.png"]
+  }
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
