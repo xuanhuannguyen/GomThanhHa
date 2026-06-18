@@ -251,28 +251,14 @@ export default function PlayerPage() {
   const [gridTransitioning, setGridTransitioning] = useState(false);
   const [shuffledSlots, setShuffledSlots] = useState<number[]>([0, 1, 2, 3, 4, 5]);
   const [showGuide, setShowGuide] = useState(false);
-  const [isBackgroundMusicOn, setIsBackgroundMusicOn] = useState(true);
+  const [isBackgroundMusicOn, setIsBackgroundMusicOn] = useState(false);
 
   const interactionBlocked = isEntering || isSpinningFast || gridTransitioning;
 
-  function handleBackgroundMusicToggle() {
+  function playBackgroundMusic() {
     const music = backgroundMusicRef.current;
-    if (!music) return;
+    if (!music) return false;
 
-    if (isBackgroundMusicOn) {
-      if (music.paused) {
-        music.volume = 0.34;
-        void music.play().catch((musicError: unknown) => {
-          console.warn("Background music playback bypassed", musicError);
-        });
-      } else {
-        music.pause();
-        setIsBackgroundMusicOn(false);
-      }
-      return;
-    }
-
-    setIsBackgroundMusicOn(true);
     music.volume = 0.34;
     void music.play()
       .then(() => {
@@ -282,30 +268,26 @@ export default function PlayerPage() {
         console.warn("Background music playback bypassed", musicError);
         setIsBackgroundMusicOn(false);
       });
+
+    return true;
   }
 
-  useEffect(() => {
+  function handleBackgroundMusicToggle() {
     const music = backgroundMusicRef.current;
-    if (!music || !isBackgroundMusicOn) return;
+    if (!music) return;
 
-    music.volume = 0.34;
+    if (isBackgroundMusicOn) {
+      if (music.paused) {
+        playBackgroundMusic();
+      } else {
+        music.pause();
+        setIsBackgroundMusicOn(false);
+      }
+      return;
+    }
 
-    const playBackgroundMusic = () => {
-      void music.play().catch((musicError: unknown) => {
-        console.warn("Background music playback bypassed", musicError);
-      });
-    };
-
-    void music.play().catch(() => {
-      window.addEventListener("click", playBackgroundMusic, { once: true });
-      window.addEventListener("keydown", playBackgroundMusic, { once: true });
-    });
-
-    return () => {
-      window.removeEventListener("click", playBackgroundMusic);
-      window.removeEventListener("keydown", playBackgroundMusic);
-    };
-  }, [isBackgroundMusicOn]);
+    playBackgroundMusic();
+  }
 
   // Generate static trajectories for flying shards, hairline cracks, and dust explosions
   const shardsData = useMemo(() => {
@@ -424,6 +406,7 @@ export default function PlayerPage() {
     }
 
     setFormErrors({});
+    playBackgroundMusic();
 
     const normalizedData = {
       name: validation.data.name,
@@ -591,18 +574,20 @@ export default function PlayerPage() {
   return (
     <div className={`page ${hasInfo ? "game-page" : ""}`}>
       <audio ref={backgroundMusicRef} src={backgroundMusicPath} loop preload="auto" />
-      <button
-        className={`music-toggle ${isBackgroundMusicOn ? "is-on" : ""}`}
-        type="button"
-        aria-label={isBackgroundMusicOn ? "Tắt nhạc nền" : "Bật nhạc nền"}
-        title={isBackgroundMusicOn ? "Tắt nhạc nền" : "Bật nhạc nền"}
-        onClick={(event) => {
-          event.stopPropagation();
-          handleBackgroundMusicToggle();
-        }}
-      >
-        {isBackgroundMusicOn ? <Volume2 size={20} /> : <VolumeX size={20} />}
-      </button>
+      {hasInfo && (
+        <button
+          className={`music-toggle ${isBackgroundMusicOn ? "is-on" : ""}`}
+          type="button"
+          aria-label={isBackgroundMusicOn ? "Tắt nhạc nền" : "Bật nhạc nền"}
+          title={isBackgroundMusicOn ? "Tắt nhạc nền" : "Bật nhạc nền"}
+          onClick={(event) => {
+            event.stopPropagation();
+            handleBackgroundMusicToggle();
+          }}
+        >
+          {isBackgroundMusicOn ? <Volume2 size={20} /> : <VolumeX size={20} />}
+        </button>
+      )}
 
       {/* Dynamic Background Embers for a Kiln Glow */}
       <div className="kiln-embers">
