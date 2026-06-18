@@ -1,8 +1,8 @@
 "use client";
 
 import { claimRequestSchema, playerSchema, type ClaimResponse } from "@binh-gom/shared";
-import { ChevronRight, Gift, GraduationCap, Phone, ShieldCheck, Sparkles, User, Ticket } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { ChevronRight, Gift, GraduationCap, Phone, ShieldCheck, Sparkles, User, Ticket, Volume2, VolumeX } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { claimPrize, getState, registerPlayer } from "@/lib/api";
 
 type FormState = {
@@ -19,6 +19,7 @@ const emptyForm: FormState = {
 
 const potHitSoundPath = "/audio/pot-hit-click.mp3";
 const potBreakSoundPath = "/audio/pot-final-magic-break.mp3";
+const backgroundMusicPath = "/audio/music-background.mp3";
 
 function playAudioFile(src: string, volume = 1) {
   if (typeof window === 'undefined') return;
@@ -222,6 +223,7 @@ function renderPrizeDisplay(prizeLabel: string) {
 }
 
 export default function PlayerPage() {
+  const backgroundMusicRef = useRef<HTMLAudioElement | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
   const [formErrors, setFormErrors] = useState<{ name?: string; studentId?: string; phone?: string }>({});
   const [deviceId, setDeviceId] = useState("");
@@ -249,8 +251,30 @@ export default function PlayerPage() {
   const [gridTransitioning, setGridTransitioning] = useState(false);
   const [shuffledSlots, setShuffledSlots] = useState<number[]>([0, 1, 2, 3, 4, 5]);
   const [showGuide, setShowGuide] = useState(false);
+  const [isBackgroundMusicOn, setIsBackgroundMusicOn] = useState(false);
 
   const interactionBlocked = isEntering || isSpinningFast || gridTransitioning;
+
+  function handleBackgroundMusicToggle() {
+    const music = backgroundMusicRef.current;
+    if (!music) return;
+
+    if (isBackgroundMusicOn) {
+      music.pause();
+      setIsBackgroundMusicOn(false);
+      return;
+    }
+
+    music.volume = 0.34;
+    void music.play()
+      .then(() => {
+        setIsBackgroundMusicOn(true);
+      })
+      .catch((musicError: unknown) => {
+        console.warn("Background music playback bypassed", musicError);
+        setIsBackgroundMusicOn(false);
+      });
+  }
 
   // Generate static trajectories for flying shards, hairline cracks, and dust explosions
   const shardsData = useMemo(() => {
@@ -535,6 +559,17 @@ export default function PlayerPage() {
 
   return (
     <div className={`page ${hasInfo ? "game-page" : ""}`}>
+      <audio ref={backgroundMusicRef} src={backgroundMusicPath} loop preload="auto" />
+      <button
+        className={`music-toggle ${isBackgroundMusicOn ? "is-on" : ""}`}
+        type="button"
+        aria-label={isBackgroundMusicOn ? "Tắt nhạc nền" : "Bật nhạc nền"}
+        title={isBackgroundMusicOn ? "Tắt nhạc nền" : "Bật nhạc nền"}
+        onClick={handleBackgroundMusicToggle}
+      >
+        {isBackgroundMusicOn ? <Volume2 size={20} /> : <VolumeX size={20} />}
+      </button>
+
       {/* Dynamic Background Embers for a Kiln Glow */}
       <div className="kiln-embers">
         {[...Array(12)].map((_, i) => (
