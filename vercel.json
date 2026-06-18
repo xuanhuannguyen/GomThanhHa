@@ -1,0 +1,6 @@
+{
+  "buildCommand": "pnpm --filter @binh-gom/shared build && pnpm --filter @binh-gom/web build",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "framework": "nextjs",
+  "outputDirectory": "apps/web/.next"
+}

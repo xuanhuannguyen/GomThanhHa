@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: binh-gom-api
+    env: node
+    buildCommand: pnpm install --frozen-lockfile && pnpm db:generate && pnpm build
+    startCommand: pnpm db:migrate && pnpm --filter @binh-gom/api start
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: PNPM_VERSION
+        value: 10
+      - key: DATABASE_URL
+        sync: false
+      - key: ADMIN_SECRET
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false

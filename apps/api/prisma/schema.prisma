@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum DrawStatus {
+  confirmed
+}
+
+model Player {
+  id        String       @id @default(cuid())
+  name      String
+  studentId String
+  phone     String
+  deviceId  String
+  createdAt DateTime     @default(now())
+  results   DrawResult[]
+
+  @@unique([studentId])
+  @@unique([phone])
+  @@unique([deviceId])
+}
+
+model DrawResult {
+  id             String     @id @default(cuid())
+  playerId       String
+  prizeCode      String
+  prizeLabel     String
+  status         DrawStatus @default(confirmed)
+  idempotencyKey String
+  resetVersion   Int
+  createdAt      DateTime   @default(now())
+  confirmedAt    DateTime   @default(now())
+  player         Player     @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([playerId, resetVersion])
+  @@unique([idempotencyKey, resetVersion])
+  @@index([prizeCode, resetVersion])
+}
+
+model PrizeInventory {
+  id           String   @id @default(cuid())
+  prizeCode    String
+  prizeLabel   String
+  totalQty     Int
+  remainingQty Int
+  activeFlag   Boolean  @default(true)
+  resetVersion Int
+  updatedAt    DateTime @updatedAt
+
+  @@unique([prizeCode, resetVersion])
+}
+
+model ResetEvent {
+  id              String   @id @default(cuid())
+  exportFileName  String
+  exportedAt      DateTime
+  performedBy     String
+  previousVersion Int
+  nextVersion     Int
+  createdAt       DateTime @default(now())
+}
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  role         String   @default("admin")
+  createdAt    DateTime @default(now())
+}
+
+model AppState {
+  id                  String   @id @default("app")
+  resetVersion        Int      @default(1)
+  campaignStatus      String   @default("active")
+  currentCampaignName String   @default("Workshop Bình Gốm Thanh Hà")
+  updatedAt           DateTime @updatedAt
+}
