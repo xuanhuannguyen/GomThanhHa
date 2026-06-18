@@ -260,8 +260,15 @@ export default function PlayerPage() {
     if (!music) return;
 
     if (isBackgroundMusicOn) {
-      music.pause();
-      setIsBackgroundMusicOn(false);
+      if (music.paused) {
+        music.volume = 0.34;
+        void music.play().catch((musicError: unknown) => {
+          console.warn("Background music playback bypassed", musicError);
+        });
+      } else {
+        music.pause();
+        setIsBackgroundMusicOn(false);
+      }
       return;
     }
 
@@ -290,12 +297,12 @@ export default function PlayerPage() {
     };
 
     void music.play().catch(() => {
-      window.addEventListener("pointerdown", playBackgroundMusic, { once: true });
+      window.addEventListener("click", playBackgroundMusic, { once: true });
       window.addEventListener("keydown", playBackgroundMusic, { once: true });
     });
 
     return () => {
-      window.removeEventListener("pointerdown", playBackgroundMusic);
+      window.removeEventListener("click", playBackgroundMusic);
       window.removeEventListener("keydown", playBackgroundMusic);
     };
   }, [isBackgroundMusicOn]);
@@ -589,7 +596,10 @@ export default function PlayerPage() {
         type="button"
         aria-label={isBackgroundMusicOn ? "Tắt nhạc nền" : "Bật nhạc nền"}
         title={isBackgroundMusicOn ? "Tắt nhạc nền" : "Bật nhạc nền"}
-        onClick={handleBackgroundMusicToggle}
+        onClick={(event) => {
+          event.stopPropagation();
+          handleBackgroundMusicToggle();
+        }}
       >
         {isBackgroundMusicOn ? <Volume2 size={20} /> : <VolumeX size={20} />}
       </button>
