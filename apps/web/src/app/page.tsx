@@ -251,7 +251,7 @@ export default function PlayerPage() {
   const [gridTransitioning, setGridTransitioning] = useState(false);
   const [shuffledSlots, setShuffledSlots] = useState<number[]>([0, 1, 2, 3, 4, 5]);
   const [showGuide, setShowGuide] = useState(false);
-  const [isBackgroundMusicOn, setIsBackgroundMusicOn] = useState(false);
+  const [isBackgroundMusicOn, setIsBackgroundMusicOn] = useState(true);
 
   const interactionBlocked = isEntering || isSpinningFast || gridTransitioning;
 
@@ -265,6 +265,7 @@ export default function PlayerPage() {
       return;
     }
 
+    setIsBackgroundMusicOn(true);
     music.volume = 0.34;
     void music.play()
       .then(() => {
@@ -275,6 +276,29 @@ export default function PlayerPage() {
         setIsBackgroundMusicOn(false);
       });
   }
+
+  useEffect(() => {
+    const music = backgroundMusicRef.current;
+    if (!music || !isBackgroundMusicOn) return;
+
+    music.volume = 0.34;
+
+    const playBackgroundMusic = () => {
+      void music.play().catch((musicError: unknown) => {
+        console.warn("Background music playback bypassed", musicError);
+      });
+    };
+
+    void music.play().catch(() => {
+      window.addEventListener("pointerdown", playBackgroundMusic, { once: true });
+      window.addEventListener("keydown", playBackgroundMusic, { once: true });
+    });
+
+    return () => {
+      window.removeEventListener("pointerdown", playBackgroundMusic);
+      window.removeEventListener("keydown", playBackgroundMusic);
+    };
+  }, [isBackgroundMusicOn]);
 
   // Generate static trajectories for flying shards, hairline cracks, and dust explosions
   const shardsData = useMemo(() => {
