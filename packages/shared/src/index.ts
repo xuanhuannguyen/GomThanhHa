@@ -34,7 +34,6 @@ export const initialPrizeInventory: Array<{
 
 export const playerSchema = z.object({
   name: z.string().trim().min(2, "Tên phải có ít nhất 2 ký tự").max(80, "Tên không được quá 80 ký tự"),
-  studentId: z.string().trim().min(3, "MSSV không hợp lệ").max(40, "MSSV không được quá 40 ký tự"),
   phone: z
     .string()
     .trim()
@@ -54,6 +53,11 @@ export const adminLoginSchema = z.object({
   secret: z.string().min(1)
 });
 
+export const prizeInventoryUpdateSchema = z.object({
+  experienceTicketQty: z.number().int().min(1).max(20),
+  toHeQty: z.number().int().min(15).max(50)
+});
+
 export type PlayerInput = z.infer<typeof playerSchema>;
 export type ClaimRequest = z.infer<typeof claimRequestSchema>;
 
@@ -70,6 +74,11 @@ export type AppStateResponse = {
   resetVersion: number;
   campaignStatus: string;
   currentCampaignName: string;
+  inventory: Array<{
+    prizeCode: PrizeCode;
+    prizeLabel: string;
+    totalQty: number;
+  }>;
 };
 
 export type AdminSummary = {

@@ -33,12 +33,16 @@ export async function getAdminSummary(prisma: PrismaClient) {
     results: results.map((result) => ({
       id: result.id,
       name: result.player.name,
-      studentId: result.player.studentId,
+      studentId: formatStudentId(result.player.studentId),
       phone: result.player.phone,
       prizeLabel: result.prizeLabel,
       confirmedAt: result.confirmedAt.toISOString()
     }))
   };
+}
+
+function formatStudentId(studentId: string) {
+  return studentId.startsWith("NO_MSSV_") ? "" : studentId;
 }
 
 export async function resetCampaign(prisma: PrismaClient, performedBy: string) {

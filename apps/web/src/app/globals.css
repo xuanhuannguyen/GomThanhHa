@@ -50,7 +50,8 @@ h4,
 }
 
 button,
-input {
+input,
+select {
   font-family: inherit;
   font-size: inherit;
 }
@@ -764,6 +765,20 @@ input {
 
 .field input:focus {
   border-bottom-color: var(--brand);
+}
+
+.panel select {
+  border: 2px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  padding: 0 12px;
+  font-weight: 700;
+  outline: none;
+}
+
+.panel select:focus {
+  border-color: var(--brand);
 }
 
 .onboarding-form {

@@ -18,7 +18,6 @@ export async function buildResultsWorkbook(prisma: PrismaClient) {
   const sheet = workbook.addWorksheet("Kết quả");
   sheet.columns = [
     { header: "Tên", key: "name", width: 28 },
-    { header: "MSSV", key: "studentId", width: 18 },
     { header: "SĐT", key: "phone", width: 18 },
     { header: "Quà nhận được", key: "prizeLabel", width: 36 },
     { header: "Thời điểm xác nhận", key: "confirmedAt", width: 24 },
@@ -31,7 +30,6 @@ export async function buildResultsWorkbook(prisma: PrismaClient) {
   for (const row of rows) {
     sheet.addRow({
       name: row.player.name,
-      studentId: row.player.studentId,
       phone: row.player.phone,
       prizeLabel: row.prizeLabel,
       confirmedAt: row.confirmedAt.toISOString(),

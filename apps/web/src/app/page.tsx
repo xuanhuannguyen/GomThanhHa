@@ -1,19 +1,17 @@
 "use client";
 
 import { claimRequestSchema, playerSchema, type ClaimResponse } from "@binh-gom/shared";
-import { ChevronRight, Gift, GraduationCap, Phone, ShieldCheck, Sparkles, User, Ticket, Volume2, VolumeX } from "lucide-react";
+import { ChevronRight, Gift, Phone, ShieldCheck, Sparkles, User, Ticket, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { claimPrize, getState, registerPlayer } from "@/lib/api";
 
 type FormState = {
   name: string;
-  studentId: string;
   phone: string;
 };
 
 const emptyForm: FormState = {
   name: "",
-  studentId: "",
   phone: ""
 };
 
@@ -225,10 +223,14 @@ function renderPrizeDisplay(prizeLabel: string) {
 export default function PlayerPage() {
   const backgroundMusicRef = useRef<HTMLAudioElement | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
-  const [formErrors, setFormErrors] = useState<{ name?: string; studentId?: string; phone?: string }>({});
+  const [formErrors, setFormErrors] = useState<{ name?: string; phone?: string }>({});
   const [deviceId, setDeviceId] = useState("");
   const [resetVersion, setResetVersion] = useState<number | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [prizeTotals, setPrizeTotals] = useState({
+    experienceTicket: 5,
+    toHe: 20
+  });
 
   // 3D Orbiting & Zoom focus states
   const [zoomedPot, setZoomedPot] = useState<number | null>(null);
@@ -348,6 +350,10 @@ export default function PlayerPage() {
     getState()
       .then((state) => {
         setResetVersion(state.resetVersion);
+        setPrizeTotals({
+          experienceTicket: state.inventory.find((item) => item.prizeCode === "experience_ticket")?.totalQty ?? 5,
+          toHe: state.inventory.find((item) => item.prizeCode === "to_he")?.totalQty ?? 20
+        });
 
         // Load stored form data
         const storedFormStr = localStorage.getItem("binh_gom_form");
@@ -394,7 +400,7 @@ export default function PlayerPage() {
     });
 
     if (!validation.success) {
-      const fieldErrors: { name?: string; studentId?: string; phone?: string } = {};
+      const fieldErrors: { name?: string; phone?: string } = {};
       validation.error.errors.forEach((err) => {
         const path = err.path[0] as keyof FormState;
         if (path) {
@@ -410,7 +416,6 @@ export default function PlayerPage() {
 
     const normalizedData = {
       name: validation.data.name,
-      studentId: validation.data.studentId,
       phone: validation.data.phone
     };
 
@@ -472,7 +477,6 @@ export default function PlayerPage() {
 
       const payload = claimRequestSchema.parse({
         name: form.name,
-        studentId: form.studentId,
         phone: form.phone,
         deviceId,
         idempotencyKey
@@ -647,23 +651,6 @@ export default function PlayerPage() {
 
                 <div className="field onboarding-field">
                   <div className="onboarding-field-icon" aria-hidden="true">
-                    <GraduationCap size={30} />
-                  </div>
-                  <div className="onboarding-field-control">
-                    <label htmlFor="studentId">Mã Số Sinh Viên (MSSV)</label>
-                    <input
-                      id="studentId"
-                      value={form.studentId}
-                      onChange={(e) => setForm((curr) => ({ ...curr, studentId: e.target.value }))}
-                      placeholder="Ví dụ: SE123456"
-                      autoComplete="off"
-                    />
-                  </div>
-                  {formErrors.studentId && <span className="error-bubble field-error">{formErrors.studentId}</span>}
-                </div>
-
-                <div className="field onboarding-field">
-                  <div className="onboarding-field-icon" aria-hidden="true">
                     <Phone size={27} />
                   </div>
                   <div className="onboarding-field-control">
@@ -792,11 +779,11 @@ export default function PlayerPage() {
                     <ul style={{ listStyle: 'none', padding: 0, margin: '12px 0 20px', display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '1.05rem', color: '#533b31' }}>
                       <li style={{ display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'center' }}>
                         <Ticket size={20} className="text-brand" style={{ color: 'var(--brand)' }} />
-                        <span><strong>5 Vé Tham Quan</strong> làng gốm Thanh Hà</span>
+                        <span><strong>{prizeTotals.experienceTicket} Vé Tham Quan</strong> làng gốm Thanh Hà</span>
                       </li>
                       <li style={{ display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'center' }}>
                         <span style={{ fontSize: '1.25rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>🐉</span>
-                        <span><strong>20 Tò He</strong> 12 con giáp</span>
+                        <span><strong>{prizeTotals.toHe} Tò He</strong> 12 con giáp</span>
                       </li>
                     </ul>
                   </div>

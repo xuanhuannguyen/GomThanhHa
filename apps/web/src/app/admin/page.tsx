@@ -1,9 +1,9 @@
 "use client";
 
 import type { AdminResult, AdminSummary } from "@/lib/api";
-import { Download, RotateCcw, ShieldCheck, User, Ticket, Sparkles, RefreshCw } from "lucide-react";
+import { Download, RotateCcw, ShieldCheck, User, Ticket, Sparkles, RefreshCw, Save } from "lucide-react";
 import { useEffect, useState } from "react";
-import { downloadAdminExport, getAdminSummary, resetCampaign } from "@/lib/api";
+import { downloadAdminExport, getAdminSummary, resetCampaign, updateAdminInventory } from "@/lib/api";
 
 const adminSecretStorageKey = "bgth_admin_secret";
 
@@ -11,9 +11,14 @@ export default function AdminPage() {
   const [secret, setSecret] = useState("");
   const [summary, setSummary] = useState<(AdminSummary & { results: AdminResult[] }) | null>(null);
   const [loading, setLoading] = useState(false);
+  const [savingInventory, setSavingInventory] = useState(false);
   const [error, setError] = useState("");
   const [isAuthed, setIsAuthed] = useState(false);
   const [showResetDialog, setShowResetDialog] = useState(false);
+  const [inventoryForm, setInventoryForm] = useState({
+    experienceTicketQty: 5,
+    toHeQty: 20
+  });
 
   useEffect(() => {
     const storedSecret = localStorage.getItem(adminSecretStorageKey);
@@ -22,6 +27,18 @@ export default function AdminPage() {
     setSecret(storedSecret);
     void loadSummary(storedSecret, false);
   }, []);
+
+  useEffect(() => {
+    if (!summary) return;
+
+    const ticket = summary.inventory.find((item) => item.prizeCode === "experience_ticket");
+    const toHe = summary.inventory.find((item) => item.prizeCode === "to_he");
+
+    setInventoryForm({
+      experienceTicketQty: ticket?.totalQty ?? 5,
+      toHeQty: toHe?.totalQty ?? 20
+    });
+  }, [summary]);
 
   async function loadSummary(secretToUse = secret, persistSecret = true) {
     setLoading(true);
@@ -54,6 +71,20 @@ export default function AdminPage() {
       await downloadAdminExport(secret);
     } catch (exportError) {
       setError(exportError instanceof Error ? exportError.message : "Không thể xuất Excel");
+    }
+  }
+
+  async function handleSaveInventory(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSavingInventory(true);
+    setError("");
+
+    try {
+      setSummary(await updateAdminInventory(secret, inventoryForm));
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : "Không thể cập nhật phần quà");
+    } finally {
+      setSavingInventory(false);
     }
   }
 
@@ -197,12 +228,78 @@ export default function AdminPage() {
               ))}
           </div>
 
+          <form className="panel" onSubmit={handleSaveInventory} style={{
+            display: 'flex',
+            alignItems: 'end',
+            gap: '14px',
+            flexWrap: 'wrap',
+            padding: '16px 20px',
+            boxShadow: '4px 4px 0px var(--brand-dark)'
+          }}>
+            <div style={{ minWidth: '220px', flex: '1 1 220px' }}>
+              <label htmlFor="experienceTicketQty" style={{ display: 'block', fontSize: '0.85rem', fontWeight: 800, color: 'var(--brand-dark)', marginBottom: '6px' }}>
+                Vé tham quan
+              </label>
+              <select
+                id="experienceTicketQty"
+                value={inventoryForm.experienceTicketQty}
+                onChange={(event) => setInventoryForm((curr) => ({ ...curr, experienceTicketQty: Number(event.target.value) }))}
+                disabled={savingInventory}
+                style={{ width: '100%', minHeight: '42px' }}
+              >
+                {range(1, 20).map((value) => (
+                  <option key={value} value={value}>{value}</option>
+                ))}
+              </select>
+            </div>
+
+            <div style={{ minWidth: '220px', flex: '1 1 220px' }}>
+              <label htmlFor="toHeQty" style={{ display: 'block', fontSize: '0.85rem', fontWeight: 800, color: 'var(--brand-dark)', marginBottom: '6px' }}>
+                Tò he
+              </label>
+              <select
+                id="toHeQty"
+                value={inventoryForm.toHeQty}
+                onChange={(event) => setInventoryForm((curr) => ({ ...curr, toHeQty: Number(event.target.value) }))}
+                disabled={savingInventory}
+                style={{ width: '100%', minHeight: '42px' }}
+              >
+                {range(15, 50).map((value) => (
+                  <option key={value} value={value}>{value}</option>
+                ))}
+              </select>
+            </div>
+
+            <div style={{ minWidth: '180px', flex: '1 1 180px' }}>
+              <span style={{ display: 'block', fontSize: '0.85rem', fontWeight: 800, color: 'var(--brand-dark)', marginBottom: '6px' }}>
+                Cảm ơn
+              </span>
+              <strong style={{
+                display: 'flex',
+                alignItems: 'center',
+                minHeight: '42px',
+                color: 'var(--brand-dark)',
+                fontSize: '1.25rem'
+              }}>
+                {100 - inventoryForm.experienceTicketQty - inventoryForm.toHeQty}
+              </strong>
+            </div>
+
+            <button
+              className="button secondary"
+              disabled={savingInventory || loading}
+              type="submit"
+              style={{ minHeight: '42px', padding: '0 18px', fontSize: '0.9rem' }}
+            >
+              <Save size={16} /> {savingInventory ? "Đang lưu..." : "Lưu phần quà"}
+            </button>
+          </form>
+
           <div className="panel table-wrap">
             <table>
               <thead>
                 <tr>
                   <th>Tên</th>
-                  <th>MSSV</th>
                   <th>SĐT</th>
                   <th>Quà</th>
                   <th>Thời điểm</th>
@@ -212,7 +309,6 @@ export default function AdminPage() {
                 {summary.results.map((row) => (
                   <tr key={row.id}>
                     <td>{row.name}</td>
-                    <td>{row.studentId}</td>
                     <td>{row.phone}</td>
                     <td>{row.prizeLabel}</td>
                     <td>{new Date(row.confirmedAt).toLocaleString("vi-VN")}</td>
@@ -334,4 +430,8 @@ function downloadBase64(base64: string, fileName: string) {
   link.download = fileName;
   link.click();
   URL.revokeObjectURL(url);
+}
+
+function range(min: number, max: number) {
+  return Array.from({ length: max - min + 1 }, (_, index) => min + index);
 }

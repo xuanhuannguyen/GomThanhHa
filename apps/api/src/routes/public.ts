@@ -19,10 +19,20 @@ publicRouter.get("/health", async (_req, res) => {
 publicRouter.get("/state", async (_req, res) => {
   try {
     const state = await ensureAppState(prisma);
+    const inventory = await prisma.prizeInventory.findMany({
+      where: { resetVersion: state.resetVersion },
+      orderBy: { prizeCode: "asc" }
+    });
+
     res.json({
       resetVersion: state.resetVersion,
       campaignStatus: state.campaignStatus,
-      currentCampaignName: state.currentCampaignName
+      currentCampaignName: state.currentCampaignName,
+      inventory: inventory.map((item) => ({
+        prizeCode: item.prizeCode,
+        prizeLabel: item.prizeLabel,
+        totalQty: item.totalQty
+      }))
     });
   } catch (error) {
     handleRouteError(res, error);
@@ -44,14 +54,13 @@ publicRouter.post("/register", async (req, res) => {
     
     const existing = await prisma.player.findFirst({
       where: {
-        OR: [{ deviceId: payload.deviceId }, { studentId: payload.studentId }, { phone: payload.phone }]
+        OR: [{ deviceId: payload.deviceId }, { phone: payload.phone }]
       }
     });
 
     if (existing) {
       let reason = "Thông tin";
       if (existing.phone === payload.phone) reason = "Số điện thoại";
-      else if (existing.studentId === payload.studentId) reason = "MSSV";
       else if (existing.deviceId === payload.deviceId) reason = "Thiết bị";
 
       res.status(400).json({ error: `${reason} này đã được sử dụng để tham gia chương trình.` });
@@ -61,7 +70,7 @@ publicRouter.post("/register", async (req, res) => {
     const player = await prisma.player.create({
       data: {
         name: payload.name,
-        studentId: payload.studentId,
+        studentId: buildInternalStudentId(payload.phone),
         phone: payload.phone,
         deviceId: payload.deviceId
       }
@@ -71,3 +80,7 @@ publicRouter.post("/register", async (req, res) => {
     handleRouteError(res, error);
   }
 });
+
+function buildInternalStudentId(phone: string) {
+  return `NO_MSSV_${phone}`;
+}

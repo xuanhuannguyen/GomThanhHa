@@ -32,9 +32,20 @@ export function claimPrize(payload: ClaimRequest) {
   });
 }
 
-export function registerPlayer(payload: { name: string; studentId: string; phone: string; deviceId: string }) {
+export function registerPlayer(payload: { name: string; phone: string; deviceId: string }) {
   return request<{ ok: boolean; playerId: string }>("/register", {
     method: "POST",
+    body: JSON.stringify(payload)
+  });
+}
+
+export function updateAdminInventory(
+  secret: string,
+  payload: { experienceTicketQty: number; toHeQty: number }
+) {
+  return request<AdminSummary & { results: AdminResult[] }>("/admin/inventory", {
+    method: "PUT",
+    headers: { "x-admin-secret": secret },
     body: JSON.stringify(payload)
   });
 }

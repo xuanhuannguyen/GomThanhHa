@@ -4,6 +4,8 @@ import { prisma } from "../lib/prisma.js";
 import { handleRouteError } from "../lib/http.js";
 import { buildResultsWorkbook } from "../services/excel-export.js";
 import { getAdminSummary, resetCampaign } from "../services/admin.js";
+import { prizeInventoryUpdateSchema } from "@binh-gom/shared";
+import { updatePrizeInventory } from "../services/inventory.js";
 
 export const adminRouter = Router();
 
@@ -23,6 +25,16 @@ adminRouter.get("/export", async (_req, res) => {
     res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     res.setHeader("Content-Disposition", `attachment; filename="${workbook.fileName}"`);
     res.send(workbook.buffer);
+  } catch (error) {
+    handleRouteError(res, error);
+  }
+});
+
+adminRouter.put("/inventory", async (req, res) => {
+  try {
+    const payload = prizeInventoryUpdateSchema.parse(req.body);
+    await updatePrizeInventory(prisma, payload);
+    res.json(await getAdminSummary(prisma));
   } catch (error) {
     handleRouteError(res, error);
   }

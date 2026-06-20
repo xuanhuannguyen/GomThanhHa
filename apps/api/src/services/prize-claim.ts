@@ -116,14 +116,13 @@ export async function findOrCreatePlayer(
   tx: Prisma.TransactionClient,
   payload: {
     name: string;
-    studentId: string;
     phone: string;
     deviceId: string;
   }
 ) {
   const existing = await tx.player.findFirst({
     where: {
-      OR: [{ deviceId: payload.deviceId }, { studentId: payload.studentId }, { phone: payload.phone }]
+      OR: [{ deviceId: payload.deviceId }, { phone: payload.phone }]
     }
   });
 
@@ -135,7 +134,7 @@ export async function findOrCreatePlayer(
     return await tx.player.create({
       data: {
         name: payload.name,
-        studentId: payload.studentId,
+        studentId: buildInternalStudentId(payload.phone),
         phone: payload.phone,
         deviceId: payload.deviceId
       }
@@ -144,7 +143,7 @@ export async function findOrCreatePlayer(
     if (isUniqueConflict(error)) {
       const player = await tx.player.findFirst({
         where: {
-          OR: [{ deviceId: payload.deviceId }, { studentId: payload.studentId }, { phone: payload.phone }]
+          OR: [{ deviceId: payload.deviceId }, { phone: payload.phone }]
         }
       });
 
@@ -179,4 +178,8 @@ function toClaimResponse(
     resetVersion: result.resetVersion,
     alreadyClaimed
   };
+}
+
+function buildInternalStudentId(phone: string) {
+  return `NO_MSSV_${phone}`;
 }
