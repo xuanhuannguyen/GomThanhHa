@@ -175,6 +175,13 @@ function seededRandom(index: number, salt: number) {
   return value - Math.floor(value);
 }
 
+function getPrizeTotalsFromState(state: Awaited<ReturnType<typeof getState>>) {
+  return {
+    experienceTicket: state.inventory.find((item) => item.prizeCode === "experience_ticket")?.totalQty ?? 5,
+    toHe: state.inventory.find((item) => item.prizeCode === "to_he")?.totalQty ?? 20
+  };
+}
+
 function renderPrizeDisplay(prizeLabel: string) {
   const label = prizeLabel.toLowerCase();
 
@@ -350,10 +357,7 @@ export default function PlayerPage() {
     getState()
       .then((state) => {
         setResetVersion(state.resetVersion);
-        setPrizeTotals({
-          experienceTicket: state.inventory.find((item) => item.prizeCode === "experience_ticket")?.totalQty ?? 5,
-          toHe: state.inventory.find((item) => item.prizeCode === "to_he")?.totalQty ?? 20
-        });
+        setPrizeTotals(getPrizeTotalsFromState(state));
 
         // Load stored form data
         const storedFormStr = localStorage.getItem("binh_gom_form");
@@ -548,6 +552,20 @@ export default function PlayerPage() {
     setAnimationClass("");
   }
 
+  async function handleOpenGuide() {
+    setError("");
+
+    try {
+      const state = await getState();
+      setResetVersion(state.resetVersion);
+      setPrizeTotals(getPrizeTotalsFromState(state));
+    } catch (guideError) {
+      setError(guideError instanceof Error ? guideError.message : "Không thể cập nhật hướng dẫn");
+    } finally {
+      setShowGuide(true);
+    }
+  }
+
   if (!isInitialized) {
     return (
       <div className="page game-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', position: 'relative' }}>
@@ -705,7 +723,7 @@ export default function PlayerPage() {
           <header className="game-header">
             <h1 className="game-title font-serif">Bình Gốm Thanh Hà</h1>
             {!result && (
-              <button className="guide-button" type="button" onClick={() => setShowGuide(true)}>
+              <button className="guide-button" type="button" onClick={handleOpenGuide}>
                 Hướng Dẫn
               </button>
             )}
@@ -779,11 +797,11 @@ export default function PlayerPage() {
                     <ul style={{ listStyle: 'none', padding: 0, margin: '12px 0 20px', display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '1.05rem', color: '#533b31' }}>
                       <li style={{ display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'center' }}>
                         <Ticket size={20} className="text-brand" style={{ color: 'var(--brand)' }} />
-                        <span><strong>{prizeTotals.experienceTicket} Vé Tham Quan</strong> làng gốm Thanh Hà</span>
+                        <span><strong>{prizeTotals.experienceTicket} Vé tham quan</strong> làng gốm Thanh Hà</span>
                       </li>
                       <li style={{ display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'center' }}>
                         <span style={{ fontSize: '1.25rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>🐉</span>
-                        <span><strong>{prizeTotals.toHe} Tò He</strong> 12 con giáp</span>
+                        <span><strong>{prizeTotals.toHe} Tò he</strong> 12 con giáp</span>
                       </li>
                     </ul>
                   </div>
