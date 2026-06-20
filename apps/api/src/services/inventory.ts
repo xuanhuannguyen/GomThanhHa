@@ -1,5 +1,6 @@
 import { initialPrizeInventory, prizeLabels } from "@binh-gom/shared";
 import type { Prisma, PrismaClient } from "@prisma/client";
+import { AppError } from "../lib/http.js";
 
 type PrismaLike = PrismaClient | Prisma.TransactionClient;
 
@@ -93,7 +94,7 @@ export async function updatePrizeInventory(
   for (const item of nextInventory) {
     const claimedCount = awardedByCode.get(item.prizeCode) ?? 0;
     if (item.totalQty < claimedCount) {
-      throw new Error(`${item.prizeLabel} đã phát ${claimedCount} phần, không thể đặt thấp hơn số đã phát.`);
+      throw new AppError(`${item.prizeLabel} đã phát ${claimedCount} phần, không thể đặt thấp hơn số đã phát.`);
     }
   }
 

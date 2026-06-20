@@ -11,6 +11,15 @@ const envSchema = z.object({
 
 export const env = envSchema.parse(process.env);
 
-export const allowedOrigins = env.CORS_ORIGIN.split(",")
+const defaultAllowedOrigins = [
+  "https://binh-gom-thanh-ha-web.vercel.app",
+  "https://gomthanhha.click",
+  "https://www.gomthanhha.click"
+];
+
+export const allowedOrigins = Array.from(new Set([
+  ...defaultAllowedOrigins,
+  ...env.CORS_ORIGIN.split(",")
+]))
   .map((origin) => origin.trim())
   .filter(Boolean);

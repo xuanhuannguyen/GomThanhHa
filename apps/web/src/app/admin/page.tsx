@@ -80,6 +80,18 @@ export default function AdminPage() {
     setError("");
 
     try {
+      if (inventoryForm.experienceTicketQty < ticketClaimed) {
+        throw new Error(`Vé tham quan đã phát ${ticketClaimed} phần, không thể đặt thấp hơn số đã phát.`);
+      }
+
+      if (inventoryForm.toHeQty < toHeClaimed) {
+        throw new Error(`Tò he đã phát ${toHeClaimed} phần, không thể đặt thấp hơn số đã phát.`);
+      }
+
+      if (100 - inventoryForm.experienceTicketQty - inventoryForm.toHeQty < thanksClaimed) {
+        throw new Error(`Phần cảm ơn đã phát ${thanksClaimed} lượt, tổng vé và tò he hiện đang quá cao.`);
+      }
+
       setSummary(await updateAdminInventory(secret, inventoryForm));
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Không thể cập nhật phần quà");
@@ -105,6 +117,15 @@ export default function AdminPage() {
       setLoading(false);
     }
   }
+
+  const ticketInventory = summary?.inventory.find((item) => item.prizeCode === "experience_ticket");
+  const toHeInventory = summary?.inventory.find((item) => item.prizeCode === "to_he");
+  const thanksInventory = summary?.inventory.find((item) => item.prizeCode === "thanks");
+  const ticketClaimed = getClaimedCount(ticketInventory);
+  const toHeClaimed = getClaimedCount(toHeInventory);
+  const thanksClaimed = getClaimedCount(thanksInventory);
+  const ticketMinOption = Math.max(1, ticketClaimed);
+  const toHeMinOption = Math.max(15, toHeClaimed);
 
   return (
     <main className="page game-page" style={{ overflow: "visible" }}>
@@ -247,10 +268,13 @@ export default function AdminPage() {
                 disabled={savingInventory}
                 style={{ width: '100%', minHeight: '42px' }}
               >
-                {range(1, 20).map((value) => (
+                {range(ticketMinOption, 20).map((value) => (
                   <option key={value} value={value}>{value}</option>
                 ))}
               </select>
+              <span style={{ display: 'block', marginTop: '6px', color: 'var(--muted)', fontSize: '0.8rem', fontWeight: 700 }}>
+                Đã phát {ticketClaimed} phần
+              </span>
             </div>
 
             <div style={{ minWidth: '220px', flex: '1 1 220px' }}>
@@ -264,10 +288,13 @@ export default function AdminPage() {
                 disabled={savingInventory}
                 style={{ width: '100%', minHeight: '42px' }}
               >
-                {range(15, 50).map((value) => (
+                {range(toHeMinOption, 50).map((value) => (
                   <option key={value} value={value}>{value}</option>
                 ))}
               </select>
+              <span style={{ display: 'block', marginTop: '6px', color: 'var(--muted)', fontSize: '0.8rem', fontWeight: 700 }}>
+                Đã phát {toHeClaimed} phần
+              </span>
             </div>
 
             <div style={{ minWidth: '180px', flex: '1 1 180px' }}>
@@ -283,6 +310,9 @@ export default function AdminPage() {
               }}>
                 {100 - inventoryForm.experienceTicketQty - inventoryForm.toHeQty}
               </strong>
+              <span style={{ display: 'block', marginTop: '6px', color: 'var(--muted)', fontSize: '0.8rem', fontWeight: 700 }}>
+                Đã phát {thanksClaimed} lượt
+              </span>
             </div>
 
             <button
@@ -433,5 +463,13 @@ function downloadBase64(base64: string, fileName: string) {
 }
 
 function range(min: number, max: number) {
+  if (min > max) return [];
+
   return Array.from({ length: max - min + 1 }, (_, index) => min + index);
+}
+
+function getClaimedCount(item?: { totalQty: number; remainingQty: number }) {
+  if (!item) return 0;
+
+  return Math.max(0, item.totalQty - item.remainingQty);
 }
