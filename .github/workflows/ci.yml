@@ -42,14 +42,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Generate Prisma Client
+        run: pnpm db:generate
+
+      - name: Build Shared Package
+        run: pnpm --filter @binh-gom/shared build
+
       - name: Run Lint
         run: pnpm lint
 
       - name: Run Typecheck
         run: pnpm typecheck
-
-      - name: Generate Prisma Client
-        run: pnpm db:generate
 
       - name: Build
         run: pnpm build
