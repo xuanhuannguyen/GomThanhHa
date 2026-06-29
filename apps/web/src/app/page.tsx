@@ -638,7 +638,7 @@ export default function PlayerPage() {
                 <span></span>
               </div>
               <div className="onboarding-logo font-serif">SẮC GỐM CỔ THỊ</div>
-              <h2 className="onboarding-title font-serif">Cốm ởi mở ra</h2>
+              <h2 className="onboarding-title font-serif">GỐM ƠI MỞ RA</h2>
               <p className="onboarding-quote font-serif">
                 "Từ đất, thành gốm. Từ người, thành di sản"
               </p>
