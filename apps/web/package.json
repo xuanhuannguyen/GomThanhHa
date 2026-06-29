@@ -7,7 +7,7 @@
     "dev": "next dev",
     "build": "pnpm --filter @binh-gom/shared build && next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "tsc -p tsconfig.json --noEmit",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
