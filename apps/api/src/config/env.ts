@@ -23,3 +23,11 @@ export const allowedOrigins = Array.from(new Set([
 ]))
   .map((origin) => origin.trim())
   .filter(Boolean);
+
+const allowedOriginPatterns = [
+  /^https:\/\/gom-thanh-ha-[a-z0-9-]+-nguyenxuan-huan\.vercel\.app$/i
+];
+
+export function isOriginAllowed(origin: string): boolean {
+  return allowedOrigins.includes(origin) || allowedOriginPatterns.some((pattern) => pattern.test(origin));
+}
