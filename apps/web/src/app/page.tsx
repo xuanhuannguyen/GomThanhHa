@@ -212,7 +212,7 @@ function renderPrizeDisplay(prizeLabel: string) {
   // Standard text replacements
   let displayLabel = prizeLabel;
   if (label.includes("cam on") || label.includes("tham gia")) {
-    displayLabel = "Cảm ơn bạn đã tham gia!";
+    displayLabel = "Chúc bạn may mắn lần sau!";
   } else if (label.includes("may man") || label.includes("lan sau")) {
     displayLabel = "Chúc bạn may mắn lần sau!";
   }
@@ -637,13 +637,10 @@ export default function PlayerPage() {
               <div className="onboarding-mark" aria-hidden="true">
                 <span></span>
               </div>
-              <div className="onboarding-logo font-serif">Bình Gốm Thanh Hà</div>
-              <h2 className="onboarding-title font-serif">
-                <span className="onboarding-title-main">Ghi Danh</span>
-                <span className="onboarding-title-accent">Nghệ Nhân</span>
-              </h2>
+              <div className="onboarding-logo font-serif">SẮC GỐM CỔ THỊ</div>
+              <h2 className="onboarding-title font-serif">Cốm ởi mở ra</h2>
               <p className="onboarding-quote font-serif">
-                "Hồn đất nung qua lửa đỏ khói sương..."
+                "Từ đất, thành gốm. Từ người, thành di sản"
               </p>
               <div className="onboarding-divider" aria-hidden="true"><span></span></div>
             </div>
@@ -721,7 +718,7 @@ export default function PlayerPage() {
       {hasInfo && (
         <>
           <header className="game-header">
-            <h1 className="game-title font-serif">Bình Gốm Thanh Hà</h1>
+            <h1 className="game-title font-serif">SẮC GỐM CỔ THỊ</h1>
             {!result && (
               <button className="guide-button" type="button" onClick={handleOpenGuide}>
                 Hướng Dẫn

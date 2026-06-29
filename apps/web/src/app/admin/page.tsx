@@ -299,7 +299,7 @@ export default function AdminPage() {
 
             <div style={{ minWidth: '180px', flex: '1 1 180px' }}>
               <span style={{ display: 'block', fontSize: '0.85rem', fontWeight: 800, color: 'var(--brand-dark)', marginBottom: '6px' }}>
-                Cảm ơn
+                Chúc may mắn
               </span>
               <strong style={{
                 display: 'flex',

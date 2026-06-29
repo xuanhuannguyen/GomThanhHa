@@ -7,7 +7,7 @@ export type PrizeCode = (typeof prizeCodes)[number];
 export const prizeLabels: Record<PrizeCode, string> = {
   experience_ticket: "Vé trải nghiệm làm gốm Thanh Hà",
   to_he: "Nhân vật tò he 12 con giáp",
-  thanks: "Cảm ơn bạn đã tham gia"
+  thanks: "Chúc bạn may mắn lần sau"
 };
 
 export const initialPrizeInventory: Array<{

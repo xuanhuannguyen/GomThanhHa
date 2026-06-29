@@ -608,20 +608,17 @@ select {
 .onboarding-title {
   position: relative;
   z-index: 2;
-  display: grid;
-  justify-items: center;
+  display: block;
   color: #351e14;
-  font-size: 4.15rem;
-  line-height: 0.92;
+  font-size: 3.4rem;
+  line-height: 1;
   letter-spacing: 0;
   margin: 0 0 18px;
   perspective: 900px;
-}
-
-.onboarding-title-main,
-.onboarding-title-accent {
-  display: block;
+  white-space: nowrap;
   width: fit-content;
+  max-width: 100%;
+  margin-inline: auto;
   background:
     linear-gradient(180deg, #2b160e 0%, #5e2a16 34%, #a84e25 54%, #2f160e 78%, #7b3a20 100%);
   background-size: 100% 190%;
@@ -635,17 +632,6 @@ select {
     0 -1px 0 rgba(70, 30, 15, 0.65),
     2px 3px 0 rgba(78, 36, 20, 0.2);
   animation: titleClaySheen 4.8s ease-in-out infinite;
-}
-
-.onboarding-title-main {
-  font-size: 0.62em;
-  font-weight: 700;
-  transform: translateY(0.08em);
-}
-
-.onboarding-title-accent {
-  font-size: 1em;
-  font-weight: 800;
 }
 
 @keyframes titleClaySheen {
